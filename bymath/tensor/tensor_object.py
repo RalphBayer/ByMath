@@ -1,4 +1,4 @@
- import Index
+from .index_object import Index
 from .shape_object import Shape
 
 from . import t_funcs
