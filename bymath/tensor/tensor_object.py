@@ -1,11 +1,12 @@
-from .index_object import Index
+ import Index
 from .shape_object import Shape
 
 from . import t_funcs
+from . import t_maths
 
 
 class Tensor(object):
-    def __init__(self, py_array, dtype="int64"):
+    def __init__(self, py_array, shape=[], dtype="int64"):
         """
             The Tensor class is a representation of a mathematical tensor.
             By keeping all values of the tensor in a single list and by
@@ -25,12 +26,20 @@ class Tensor(object):
 
         self._tensor = t_funcs.flatten(py_array) # TODO: CAST TO dtype AFTER flatten().
         self._shape  = Shape(py_array)
-        self.index   = Index(self._shape)
+
+        if shape != []:
+            self.shape = shape
+
+        self._index   = Index(self._shape)
 
 
     # getter and setter functions.
     @property
     def tensor(self): return self._tensor
+    @tensor.setter
+    def tensor(self, value):
+        if isinstance(value, list):
+            self.__init__(value)
 
     @property
     def shape(self): return self._shape.shape
@@ -47,7 +56,7 @@ class Tensor(object):
 
 
 
-    # Functions for the tensor's shape
+    # Functions for the tensor's shape object
     def flatten(self):
         """
             Flattens the shape of the tensor.
@@ -77,6 +86,7 @@ class Tensor(object):
     def match_shape(self, shape_to_match):
         """
             Reshapes self.shape to be compatible with shape_to_match
+
         """
 
         self._shape.match_shape(shape_to_match)
@@ -85,46 +95,113 @@ class Tensor(object):
 
 
     # Functions for the tensor's index object
-    def at_current_index(self):
+    def value_at_current_index(self):
         """
-            Returns a list of the tensor at self.index.index.
+            Returns a list of the tensor at self._index.index.
 
         """
 
         # Should I cast it to a tensor object here or leave it as a list?
-        return self.tensor[self.index.as_array_index()]
+        return self.tensor[self._index.as_array_index()]
 
 
     def increment_index(self, value=1, index=-1):
         """
-            adds 'value' to self.index.index at 'index'
+            adds 'value' to self._index.index at 'index'
 
         """
 
-        self.index.increment(value, index)
+        self._index.increment(value, index)
 
 
     def reset_index(self):
         """
-            Turns self.index.index into a list of 0s with size len(self.shape)
+            Turns self._index.index into a list of 0s with size len(self.shape)
 
         """
 
-        self.index.reset_index()
+        self._index.reset_index()
 
 
 
     # Dunder or 'magic' functions:
     def __getitem__(self, tslices):
-        aslice     = self.index.tslices_to_aslice(tslices)
+        aslice     = self._index.tslices_to_aslice(tslices)
         new_tensor = t_funcs.as_tensor(self.tensor[aslice], shape=self.shape[len([tslices]):])
         return new_tensor
 
 
     def __setitem__(self, tslice, value):
-        aslice              = self.index.tslices_to_aslice(tslices)
+        aslice              = self._index.tslices_to_aslice(tslices)
         self.tensor[aslice] = value
 
 
     def __str__(self):
         return str(self.tensor)
+
+
+    def __add__(self, add_tensor):
+        return t_funcs.map_to_func(t_maths.add, self, add_tensor, shape=self.shape)
+
+    def __radd__(self, add_tensor):
+        return t_funcs.map_to_func(t_maths.add, self, add_tensor, shape=self.shape)
+
+    def __iadd__(self, add_tensor):
+        return t_funcs.map_to_func(t_maths.add, self, add_tensor, shape=self.shape)
+
+
+    def __sub__(self, sub_tensor):
+        return t_funcs.map_to_func(t_maths.sub, self, sub_tensor, shape=self.shape)
+
+    def __rsub__(self, sub_tensor):
+        return t_funcs.map_to_func(t_maths.sub, sub_tensor, self, shape=self.shape)
+
+    def __isub__(self, sub_tensor):
+        return t_funcs.map_to_func(t_maths.sub, self, sub_tensor, shape=self.shape)
+
+
+    def __mul__(self, mul_tensor):
+        return t_funcs.map_to_func(t_maths.mul, self, mul_tensor, shape=self.shape)
+
+    def __rmul__(self, mul_tensor):
+        return t_funcs.map_to_func(t_maths.mul, self, mul_tensor, shape=self.shape)
+
+    def __imul__(self, mul_tensor):
+        return t_funcs.map_to_func(t_maths.mul, self, mul_tensor, shape=self.shape)
+
+
+    def __truediv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.truediv, self, div_tensor, shape=self.shape)
+
+    def __rtruediv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.truediv, div_tensor, self, shape=self.shape)
+
+    def __itruediv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.truediv, self, div_tensor, shape=self.shape)
+
+
+    def __floordiv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.floordiv, self, div_tensor, shape=self.shape)
+
+    def __rfloordiv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.floordiv, div_tensor, self, shape=self.shape)
+
+    def __ifloordiv__(self, div_tensor):
+        return t_funcs.map_to_func(t_maths.floordiv, self, div_tensor, shape=self.shape)
+
+
+    def __pow__(self, pow_tensor):
+        return t_funcs.map_to_func(t_maths.pow, self, pow_tensor, shape=self.shape)
+
+    def __rpow__(self, pow_tensor):
+        return t_funcs.map_to_func(t_maths.pow, pow_tensor, self, shape=self.shape)
+
+    def __ipow__(self, pow_tensor):
+        return t_funcs.map_to_func(t_maths.pow, self, pow_tensor, shape=self.shape)
+
+
+    def __neg__(self):
+        return t_funcs.map_to_func(t_maths.neg, self, shape=self.shape)
+
+    def __pos__(self):
+        return t_funcs.map_to_func(t_maths.pos, self, shape=self.shape)
