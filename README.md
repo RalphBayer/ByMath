@@ -27,7 +27,7 @@ Try running test.py to see a tensor and scalar get added together.
 Other than that this project is still in it's early stages, howver try creating your own tensors by writting
 ``` Python
   import bymath as bm
-  tensor = bm.Tensor(""" Your tensor as a nested list here """)
+  tensor = bm.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 ```
 After, try running a few commands. Most commands will be the same as numpy for ease of use for numpy users.
 
@@ -40,10 +40,6 @@ Any contribution to this project is very much welcomed. The only rules are -
 3. When adding code, in the documentation add any acknowledgments you would like for yourself.
 Other than that you're mostly free to contribute however you like.
 
----
-
-## Version
-V0.1 *very early stages.
 
 ---
 
