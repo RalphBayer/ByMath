@@ -37,7 +37,7 @@ def map_to_func(func, *args, shape=[]):
         The function should also accept the values all together in a list.
 
         Example:
-            >>>  def add(vals):
+            >>> def add(vals):
             >>>     val1, val2 = vals
             >>>     return val1 + val2
             >>>
@@ -45,19 +45,31 @@ def map_to_func(func, *args, shape=[]):
 
     """
 
-    new_array = []
-    for _ in range(args[0].size):
+    size_list = []
+    for arg in args:
+        size_list.append(arg.size)
 
-        # get each values
+    new_array = []
+    for _ in range(args[0]._shape.get_biggest_size(size_list)):
+
+        # get each value
         vals = []
 
         for arg in args:
-            vals.append(arg.at_current_index())
+            vals.append(arg.value_at_current_index())
 
+        # Map values to function.
         new_array.append(func(vals))
 
-        # increment each py_arrays' index
+        # increment each py_arrays' index.
         for arg in args:
             arg.increment_index()
 
+    # reset all Tensor objects' indexes.
+    for arg in args:
+        arg.reset_index()
+
+
+    if shape == []:
+        shape = args[0].shape
     return as_tensor(new_array, shape)
