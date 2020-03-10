@@ -7,3 +7,4 @@
 
 from .tensor_object import Tensor
 from .t_funcs import *
+from .t_maths import *
