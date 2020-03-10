@@ -46,11 +46,13 @@ def to_tensor_object(arg_pos):
             new_args   = []
             new_kwargs = {}
 
+
             if isinstance(arg_pos, range):
                 if arg_pos.start == arg_pos.stop:
                     arg_range = range(arg_pos.start, len(args))
             else:
-                arg_range = arg_pos
+                arg_range = range(arg_pos, arg_pos+1)
+
 
             # TODO: ALSO GO THROUGH kwargs
             for i in range(len(args)):
@@ -81,7 +83,8 @@ def tensors_to_same_shape(arg_pos):
     def decorator(func):
         @to_tensor_object(arg_pos)
         def wrapper(*args, **kwargs):
-            biggest_shape = []
+
+            new_args = []
 
             if isinstance(arg_pos, range):
                 if arg_pos.start == arg_pos.stop:
@@ -91,18 +94,21 @@ def tensors_to_same_shape(arg_pos):
 
             # Get the shape all others will be reshaped to.
             # TODO: ALSO GO THROUGH kwargs
+            shape_list = []
             for i in range(len(args)):
                 if i in arg_range:
-                    if len(args[i].shape) > len(biggest_shape):
-                        biggest_shape = args[i].shape
-                    else:
-                        continue
+                    shape_list.append(args[i].shape)
+            biggest_shape = args[arg_range.start]._shape.get_biggest_shape(shape_list)
 
             # Change the shape of each tensor
             for i in range(len(args)):
                 if i in arg_range:
-                    args[i].match_shape(biggest_shape)
+                    new_args.append(t.Tensor(args[i]._tensor[0:], args[i].shape))
+                    new_args[-1].match_shape(biggest_shape)
+                    new_args[-1].reset_index()
+                else:
+                    new_args.append(args[i])
 
-            return func(*args, **kwargs)
+            return func(*new_args, **kwargs)
         return wrapper
     return decorator
